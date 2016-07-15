@@ -12,7 +12,7 @@ class QueryTest extends SpecificationWithJUnit {
 
   MysqlRunner.run()
 
-  Fragments.foreach(Drivers.list) { case driver =>
+  Fragments.foreach(Drivers.list) { driver =>
     s"${driver.name}" should {
       s"prepare/select/clear database" in new ctx {
         Query.clearTable(driver)
