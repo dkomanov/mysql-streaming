@@ -12,15 +12,27 @@ object Query {
     s"""
 CREATE TABLE $TableName (
   id INT,
-  name VARCHAR(100),
+  name VARCHAR(1000),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+"""
+
+  private val MillionSql =
+    s"""
+SELECT
+  t1.id AS id1, t1.name AS name1, t2.id AS id2, t2.name AS name2,
+  t2.name AS more1, t2.name AS more2, t2.name AS more3, t2.name AS more4
+FROM
+  $TableName t1
+  LEFT JOIN
+  $TableName t2
+    ON TRUE
 """
 
   val TableSize = 1000
 
   val TestData = (1 to 1000)
-    .map(i => TestTableRow(i, i.toString.padTo(100, '0')))
+    .map(i => TestTableRow(i, i.toString.padTo(1000, '0')))
     .toList
 
   private val map = new util.IdentityHashMap[MysqlDriver, Connection]()
@@ -67,6 +79,34 @@ CREATE TABLE $TableName (
       while (rs.next()) {
         f(mapRow(rs))
       }
+    }
+  }
+
+  def forEachMillionAtOnce(driver: MysqlDriver): Unit = {
+    withStatement(driver) { st =>
+      // no setFetchSize!
+
+      var count = 0
+      val rs = st.executeQuery(MillionSql)
+      while (rs.next()) {
+        mapRow(rs)
+        count += 1
+      }
+      require(count == TableSize * TableSize)
+    }
+  }
+
+  def forEachMillionViaStreaming(driver: MysqlDriver): Unit = {
+    withStatement(driver) { st =>
+      st.setFetchSize(Int.MinValue)
+
+      var count = 0
+      val rs = st.executeQuery(MillionSql)
+      while (rs.next()) {
+        mapRow(rs)
+        count += 1
+      }
+      require(count == TableSize * TableSize)
     }
   }
 
