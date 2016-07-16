@@ -31,5 +31,3 @@ abstract class BenchmarkBase(driver: MysqlDriver) {
 class ConnectorJBenchmark extends BenchmarkBase(ConnectorJDriver)
 
 class MariaDbBenchmark extends BenchmarkBase(MariaDbDriver)
-
-class DrizzleBenchmark extends BenchmarkBase(DrizzleDriver)
