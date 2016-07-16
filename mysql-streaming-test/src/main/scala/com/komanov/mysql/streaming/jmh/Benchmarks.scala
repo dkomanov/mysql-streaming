@@ -10,20 +10,30 @@ import org.openjdk.jmh.annotations._
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Fork(value = 1, jvmArgs = Array("-Xmx1G"))
 @Threads(1)
-@Measurement(iterations = 5, time = 30, timeUnit = TimeUnit.SECONDS)
-@Warmup(iterations = 2, time = 30, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 1, time = 5, timeUnit = TimeUnit.SECONDS)
 abstract class BenchmarkBase(driver: MysqlDriver) {
 
   MysqlRunner.run()
 
+  Query.prepareTable(driver)
+
+  @Param(Array(
+    "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "10", "20", "30", "40", "50", "60", "70", "80", "90",
+    "100", "200", "300", "400", "500", "600", "700", "800", "900",
+    "1000"
+  ))
+  var limit : Int = 0
+
   @Benchmark
   def atOnce(): List[TestTableRow] = {
-    Query.selectAtOnce(driver)
+    Query.selectAtOnce(driver, limit)
   }
 
   @Benchmark
   def stream(): List[TestTableRow] = {
-    Query.selectViaStreaming(driver)
+    Query.selectViaStreaming(driver, limit)
   }
 
 }
