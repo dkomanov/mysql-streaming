@@ -31,16 +31,20 @@ FROM
 
   val TableSize = 1000
 
-  val TestData = (1 to 1000)
-    .map(i => TestTableRow(i, i.toString.padTo(1000, '0')))
-    .toList
+  val TestData = generateTestData(200)
 
   private val map = new util.IdentityHashMap[MysqlDriver, Connection]()
 
-  def prepareTable(driver: MysqlDriver): Unit = {
+  private def generateTestData(length: Int) = {
+    (1 to TableSize)
+      .map(i => TestTableRow(i, i.toString.padTo(length, '0')))
+      .toList
+  }
+
+  def prepareTable(driver: MysqlDriver, length: Int = 200): Unit = {
     val conn = getConnection(driver)
     val st = conn.prepareStatement(s"INSERT INTO $TableName (id, name) VALUES(?, ?)")
-    for (row <- TestData) {
+    for (row <- generateTestData(length)) {
       st.setInt(1, row.id)
       st.setString(2, row.name)
       require(st.executeUpdate() == 1)
@@ -65,9 +69,26 @@ FROM
     }
   }
 
+  def selectAtOnce(driver: MysqlDriver, limit: Int): List[TestTableRow] = {
+    withStatement(driver) { st =>
+      val rs = st.executeQuery(s"SELECT id, name FROM $TableName LIMIT $limit")
+      val result = mutable.ListBuffer[TestTableRow]()
+      while (rs.next()) {
+        result += mapRow(rs)
+      }
+      result.toList
+    }
+  }
+
   def selectViaStreaming(driver: MysqlDriver): List[TestTableRow] = {
     val result = mutable.ListBuffer[TestTableRow]()
     forEach(driver, r => result += r)
+    result.toList
+  }
+
+  def selectViaStreaming(driver: MysqlDriver, limit: Int): List[TestTableRow] = {
+    val result = mutable.ListBuffer[TestTableRow]()
+    forEach(driver, limit, r => result += r)
     result.toList
   }
 
@@ -76,6 +97,17 @@ FROM
       st.setFetchSize(Int.MinValue)
 
       val rs = st.executeQuery(s"SELECT id, name FROM $TableName")
+      while (rs.next()) {
+        f(mapRow(rs))
+      }
+    }
+  }
+
+  def forEach(driver: MysqlDriver, limit: Int, f: TestTableRow => Unit): Unit = {
+    withStatement(driver) { st =>
+      st.setFetchSize(Int.MinValue)
+
+      val rs = st.executeQuery(s"SELECT id, name FROM $TableName LIMIT $limit")
       while (rs.next()) {
         f(mapRow(rs))
       }

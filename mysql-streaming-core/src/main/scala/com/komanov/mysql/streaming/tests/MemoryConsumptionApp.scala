@@ -21,7 +21,7 @@ object MemoryConsumptionApp {
 
     MysqlRunner.run()
 
-    Query.prepareTable(driver)
+    Query.prepareTable(driver, length = 1000)
 
     try {
       if (streaming) {
