@@ -12,8 +12,15 @@ ec git -C $GH_PAGES_PATH status > /dev/null
 
 ec mvn clean install
 
-ec java -jar mysql-streaming-test/target/benchmarks.jar -rf json -rff jmh-result.json > jmh.log
+ec java -jar mysql-streaming-test-connectorj/target/benchmarks.jar -rf json -rff jmh-connectorj-result.json > jmh-connectorj.log
+ec java -jar mysql-streaming-test-mariadb/target/benchmarks.jar -rf json -rff jmh-mariadb-result.json > jmh-mariadb.log
 
-ec mv jmh-result.json $GH_PAGES_PATH
+echo '[' >> jmh-results.json
+cat jmh-connectorj-result.json >> jmh-results.json
+echo ',' >> jmh-results.json
+cat jmh-mariadb-result.json >> jmh-results.json
+echo ']' >> jmh-results.json
+
+ec mv jmh-results.json $GH_PAGES_PATH
 
 echo "Don't forget to push gh-pages!"

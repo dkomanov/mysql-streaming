@@ -10,7 +10,10 @@
 
     <modules>
         <module>mysql-streaming-core</module>
-        <module>mysql-streaming-test</module>
+        <module>mysql-streaming-test-core</module>
+        <module>mysql-streaming-test-parent</module>
+        <module>mysql-streaming-test-connectorj</module>
+        <module>mysql-streaming-test-mariadb</module>
     </modules>
 
     <properties>

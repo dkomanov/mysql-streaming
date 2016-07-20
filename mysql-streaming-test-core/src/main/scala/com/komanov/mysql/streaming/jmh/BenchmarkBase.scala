@@ -24,7 +24,7 @@ abstract class BenchmarkBase(driver: MysqlDriver) {
     "100", "200", "300", "400", "500", "600", "700", "800", "900",
     "1000"
   ))
-  var limit : Int = 0
+  var limit: Int = 0
 
   @Benchmark
   def atOnce(): List[TestTableRow] = {
@@ -37,7 +37,3 @@ abstract class BenchmarkBase(driver: MysqlDriver) {
   }
 
 }
-
-class ConnectorJBenchmark extends BenchmarkBase(ConnectorJDriver)
-
-class MariaDbBenchmark extends BenchmarkBase(MariaDbDriver)

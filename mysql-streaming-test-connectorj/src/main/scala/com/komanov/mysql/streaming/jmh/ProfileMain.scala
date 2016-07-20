@@ -11,7 +11,6 @@ object ProfileMain {
     val opt = new OptionsBuilder()
       .addProfiler(classOf[StackProfiler])
       .jvmArgsAppend("-Djmh.stack.lines=10")
-      //.include("ConnectorJ")
       .build()
 
     new Runner(opt).run()
