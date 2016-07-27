@@ -14,9 +14,7 @@ import org.openjdk.jmh.annotations._
 @Warmup(iterations = 1, time = 5, timeUnit = TimeUnit.SECONDS)
 abstract class BenchmarkBase(driver: MysqlDriver) {
 
-  MysqlRunner.run()
-
-  Query.prepareTable(driver)
+  OneTimeInitialization.initialize(driver)
 
   @Param(Array(
     "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -36,4 +34,19 @@ abstract class BenchmarkBase(driver: MysqlDriver) {
     Query.selectViaStreaming(driver, limit)
   }
 
+}
+
+private[jmh] object OneTimeInitialization {
+  private var initialized = false
+
+  def initialize(driver: MysqlDriver): Unit = synchronized {
+    if (!initialized) {
+      MysqlRunner.run()
+
+      Query.clearTable(driver)
+      Query.prepareTable(driver)
+
+      initialized = true
+    }
+  }
 }
